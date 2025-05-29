@@ -17,7 +17,11 @@ import {
   Volume2,
   Bookmark,
   Share,
-  Settings
+  Settings,
+  Moon,
+  Sun,
+  Palette,
+  X
 } from 'lucide-react';
 
 // Mock Bible Data
