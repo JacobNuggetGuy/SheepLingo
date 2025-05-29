@@ -67,6 +67,44 @@ const SAMPLE_VERSES = {
   }
 };
 
+// Enhanced highlight colors with more options
+const HIGHLIGHT_COLORS = [
+  { name: 'yellow', bg: 'bg-yellow-200', border: 'border-yellow-400', text: 'text-yellow-800', darkBg: 'dark:bg-yellow-300', emoji: '🟡' },
+  { name: 'blue', bg: 'bg-blue-200', border: 'border-blue-400', text: 'text-blue-800', darkBg: 'dark:bg-blue-300', emoji: '🔵' },
+  { name: 'green', bg: 'bg-green-200', border: 'border-green-400', text: 'text-green-800', darkBg: 'dark:bg-green-300', emoji: '🟢' },
+  { name: 'pink', bg: 'bg-pink-200', border: 'border-pink-400', text: 'text-pink-800', darkBg: 'dark:bg-pink-300', emoji: '🩷' },
+  { name: 'orange', bg: 'bg-orange-200', border: 'border-orange-400', text: 'text-orange-800', darkBg: 'dark:bg-orange-300', emoji: '🟠' },
+  { name: 'purple', bg: 'bg-purple-200', border: 'border-purple-400', text: 'text-purple-800', darkBg: 'dark:bg-purple-300', emoji: '🟣' },
+  { name: 'red', bg: 'bg-red-200', border: 'border-red-400', text: 'text-red-800', darkBg: 'dark:bg-red-300', emoji: '🔴' },
+  { name: 'teal', bg: 'bg-teal-200', border: 'border-teal-400', text: 'text-teal-800', darkBg: 'dark:bg-teal-300', emoji: '🩵' },
+  { name: 'indigo', bg: 'bg-indigo-200', border: 'border-indigo-400', text: 'text-indigo-800', darkBg: 'dark:bg-indigo-300', emoji: '🔷' }
+];
+
+// Dark Mode Toggle Component
+const DarkModeToggle = ({ darkMode, setDarkMode }) => {
+  return (
+    <motion.button
+      onClick={() => setDarkMode(!darkMode)}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`p-3 rounded-full transition-all duration-300 ${
+        darkMode 
+          ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' 
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      }`}
+      title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    >
+      <motion.div
+        initial={false}
+        animate={{ rotate: darkMode ? 0 : 180 }}
+        transition={{ duration: 0.3 }}
+      >
+        {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </motion.div>
+    </motion.button>
+  );
+};
+
 // Sheep Mascot Component
 const SheepMascot = ({ mood = 'happy', size = 'md', message }) => {
   const sizes = {
