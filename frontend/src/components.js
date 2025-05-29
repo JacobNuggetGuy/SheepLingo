@@ -914,6 +914,286 @@ export const VerseStudy = ({
   );
 };
 
+// Quiz Component
+export const Quiz = ({ userProgress, setUserProgress }) => {
+  const { bookName, chapterGroup } = useParams();
+  const navigate = useNavigate();
+  
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+
+  const chapterStart = parseInt(chapterGroup) - 4;
+  const chapterEnd = parseInt(chapterGroup);
+
+  // Mock quiz questions based on chapters
+  const generateQuestions = () => {
+    const questions = [
+      {
+        question: `What important themes appear in ${bookName} chapters ${chapterStart}-${chapterEnd}?`,
+        options: [
+          "God's creation and sovereignty",
+          "Human wisdom and knowledge", 
+          "Political power and warfare",
+          "Economic prosperity"
+        ],
+        correct: 0,
+        explanation: "These chapters focus on God's fundamental nature and His relationship with creation."
+      },
+      {
+        question: `In ${bookName}, what lesson can we learn from the events in these chapters?`,
+        options: [
+          "Trust in human strength",
+          "Faith and obedience to God",
+          "Worldly success matters most",
+          "Isolation from others"
+        ],
+        correct: 1,
+        explanation: "The Bible consistently teaches the importance of faith and obedience to God's will."
+      },
+      {
+        question: `How do these chapters in ${bookName} apply to modern life?`,
+        options: [
+          "They are only historical accounts",
+          "They provide timeless spiritual principles",
+          "They are irrelevant today",
+          "They only apply to ancient cultures"
+        ],
+        correct: 1,
+        explanation: "Biblical principles are timeless and applicable to all generations."
+      },
+      {
+        question: `What character quality is emphasized in ${bookName} chapters ${chapterStart}-${chapterEnd}?`,
+        options: [
+          "Pride and self-reliance",
+          "Humility and dependence on God",
+          "Anger and revenge",
+          "Materialism and greed"
+        ],
+        correct: 1,
+        explanation: "The Bible consistently emphasizes humility and our need to depend on God."
+      },
+      {
+        question: `What is the main message of these chapters in ${bookName}?`,
+        options: [
+          "Human achievement is most important",
+          "God is faithful and loving",
+          "Life has no meaning",
+          "Only the strong survive"
+        ],
+        correct: 1,
+        explanation: "Throughout Scripture, God's faithfulness and love for humanity is the central message."
+      }
+    ];
+    return questions;
+  };
+
+  const questions = generateQuestions();
+
+  const handleAnswerSelect = (answerIndex) => {
+    setSelectedAnswer(answerIndex);
+  };
+
+  const handleNextQuestion = () => {
+    if (selectedAnswer === questions[currentQuestion].correct) {
+      setScore(score + 1);
+    }
+    
+    setShowResult(true);
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+        setShowResult(false);
+      } else {
+        setQuizCompleted(true);
+      }
+    }, 2000);
+  };
+
+  const handleQuizComplete = () => {
+    const passed = score >= 3; // 60% to pass
+    
+    if (passed) {
+      // Mark quiz as completed and award XP
+      setUserProgress(prev => ({
+        ...prev,
+        completedQuizzes: {
+          ...prev.completedQuizzes,
+          [`${bookName}-${chapterGroup}`]: true
+        },
+        totalXP: prev.totalXP + 50 // Bonus XP for quiz completion
+      }));
+    }
+    
+    setTimeout(() => {
+      navigate(`/book/${bookName}`);
+    }, 3000);
+  };
+
+  if (quizCompleted) {
+    const passed = score >= 3;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 flex items-center justify-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="bg-white rounded-2xl p-8 shadow-xl border-4 border-purple-200 text-center max-w-md"
+        >
+          <SheepMascot 
+            size="lg" 
+            mood={passed ? "encouraging" : "sympathetic"}
+            message={passed ? "Great job! You passed!" : "Don't worry, try again!"} 
+          />
+          
+          <h2 className={`text-2xl font-bold mt-4 ${passed ? 'text-green-600' : 'text-orange-600'}`}>
+            {passed ? 'Quiz Passed! 🎉' : 'Keep Studying! 📚'}
+          </h2>
+          
+          <p className="text-gray-600 mt-2">
+            You scored {score} out of {questions.length}
+          </p>
+          
+          {passed && (
+            <div className="mt-4 p-3 bg-green-100 rounded-lg border-2 border-green-200">
+              <p className="text-green-700 font-semibold">+50 XP Bonus!</p>
+            </div>
+          )}
+          
+          <div className="mt-6">
+            <motion.button
+              onClick={handleQuizComplete}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-6 py-3 rounded-xl font-bold text-white ${
+                passed ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'
+              }`}
+            >
+              Continue Learning
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b-2 border-purple-200">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <motion.button
+                onClick={() => navigate(`/book/${bookName}`)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
+              </motion.button>
+              <SheepMascot size="md" message="Time for a quiz!" />
+            </div>
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-gray-800">{bookName} Quiz</h1>
+              <p className="text-sm text-gray-600">Chapters {chapterStart}-{chapterEnd}</p>
+              <div className="w-48 bg-gray-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+                />
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              Question {currentQuestion + 1}/{questions.length}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quiz Content */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <AnimatePresence mode="wait">
+          {!showResult ? (
+            <motion.div
+              key={currentQuestion}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="bg-white rounded-2xl shadow-xl border-4 border-purple-200 p-8"
+            >
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                {questions[currentQuestion].question}
+              </h2>
+              
+              <div className="space-y-4">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => handleAnswerSelect(index)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full p-4 text-left rounded-xl border-3 transition-all ${
+                      selectedAnswer === index
+                        ? 'bg-purple-100 border-purple-500 text-purple-700'
+                        : 'bg-gray-50 border-gray-200 hover:border-purple-300 text-gray-700'
+                    }`}
+                  >
+                    <span className="font-medium">{String.fromCharCode(65 + index)}.</span> {option}
+                  </motion.button>
+                ))}
+              </div>
+              
+              <div className="flex justify-center mt-8">
+                <motion.button
+                  onClick={handleNextQuestion}
+                  disabled={selectedAnswer === null}
+                  whileHover={selectedAnswer !== null ? { scale: 1.05 } : {}}
+                  whileTap={selectedAnswer !== null ? { scale: 0.95 } : {}}
+                  className={`px-8 py-3 rounded-xl font-bold text-white ${
+                    selectedAnswer !== null
+                      ? 'bg-purple-500 hover:bg-purple-600'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  {currentQuestion < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                </motion.button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl shadow-xl border-4 p-8 text-center"
+            >
+              {selectedAnswer === questions[currentQuestion].correct ? (
+                <div className="border-green-200">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h3 className="text-2xl font-bold text-green-600 mb-4">Correct!</h3>
+                </div>
+              ) : (
+                <div className="border-red-200">
+                  <div className="text-6xl mb-4">❌</div>
+                  <h3 className="text-2xl font-bold text-red-600 mb-4">Not quite right</h3>
+                </div>
+              )}
+              
+              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                <p className="text-blue-800">
+                  <strong>Explanation:</strong> {questions[currentQuestion].explanation}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 // Profile Component
 export const Profile = ({ userProgress }) => {
   const navigate = useNavigate();
