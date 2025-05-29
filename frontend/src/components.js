@@ -153,9 +153,13 @@ const SheepMascot = ({ mood = 'happy', size = 'md', message }) => {
 };
 
 // Loading Screen Component
-export const LoadingScreen = () => {
+export const LoadingScreen = ({ darkMode }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-400 via-green-500 to-green-600 flex items-center justify-center">
+    <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+      darkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-green-900' 
+        : 'bg-gradient-to-br from-green-400 via-green-500 to-green-600'
+    }`}>
       <motion.div
         className="text-center"
         initial={{ opacity: 0 }}
@@ -164,7 +168,7 @@ export const LoadingScreen = () => {
       >
         <SheepMascot size="xl" />
         <motion.h1
-          className="text-4xl font-bold text-white mt-6 mb-4"
+          className={`text-4xl font-bold mt-6 mb-4 ${darkMode ? 'text-white' : 'text-white'}`}
           initial={{ y: 20 }}
           animate={{ y: 0 }}
           transition={{ delay: 0.3 }}
@@ -172,7 +176,7 @@ export const LoadingScreen = () => {
           SheepLingo
         </motion.h1>
         <motion.p
-          className="text-green-100 text-lg"
+          className={`text-lg ${darkMode ? 'text-gray-200' : 'text-green-100'}`}
           initial={{ y: 20 }}
           animate={{ y: 0 }}
           transition={{ delay: 0.5 }}
@@ -189,7 +193,7 @@ export const LoadingScreen = () => {
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                className="w-3 h-3 bg-white rounded-full"
+                className={`w-3 h-3 rounded-full ${darkMode ? 'bg-gray-200' : 'bg-white'}`}
                 animate={{ y: [0, -10, 0] }}
                 transition={{ delay: i * 0.2, repeat: Infinity, duration: 1 }}
               />
