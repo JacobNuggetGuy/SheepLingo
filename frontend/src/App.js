@@ -13,6 +13,11 @@ import {
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('sheepLingo_darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  
   const [userProgress, setUserProgress] = useState(() => {
     const saved = localStorage.getItem('sheepLingo_progress');
     return saved ? JSON.parse(saved) : {
