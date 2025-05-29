@@ -206,7 +206,7 @@ export const LoadingScreen = ({ darkMode }) => {
 };
 
 // Home Component - Main Learning Path
-export const Home = ({ userProgress, setUserProgress }) => {
+export const Home = ({ userProgress, setUserProgress, darkMode, setDarkMode }) => {
   const navigate = useNavigate();
 
   const getBooksInRows = () => {
@@ -227,34 +227,57 @@ export const Home = ({ userProgress, setUserProgress }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
+    <div className={`min-h-screen transition-all duration-300 ${
+      darkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-green-900' 
+        : 'bg-gradient-to-br from-blue-50 via-green-50 to-blue-50'
+    }`}>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b-2 border-green-200">
+      <div className={`shadow-sm border-b-2 transition-all duration-300 ${
+        darkMode 
+          ? 'bg-gray-800 border-green-700' 
+          : 'bg-white border-green-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <SheepMascot size="md" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">SheepLingo</h1>
-                <p className="text-green-600 text-sm">Bible Study Journey</p>
+                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  SheepLingo
+                </h1>
+                <p className={`text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                  Bible Study Journey
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2 bg-orange-100 px-3 py-2 rounded-full">
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all ${
+                darkMode ? 'bg-orange-900 bg-opacity-50' : 'bg-orange-100'
+              }`}>
                 <Flame className="w-5 h-5 text-orange-500" />
-                <span className="font-bold text-orange-700">{userProgress.streak}</span>
+                <span className={`font-bold ${darkMode ? 'text-orange-400' : 'text-orange-700'}`}>
+                  {userProgress.streak}
+                </span>
               </div>
-              <div className="flex items-center space-x-2 bg-blue-100 px-3 py-2 rounded-full">
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-all ${
+                darkMode ? 'bg-blue-900 bg-opacity-50' : 'bg-blue-100'
+              }`}>
                 <Star className="w-5 h-5 text-blue-500" />
-                <span className="font-bold text-blue-700">{userProgress.totalXP}</span>
+                <span className={`font-bold ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>
+                  {userProgress.totalXP}
+                </span>
               </div>
+              <DarkModeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/profile')}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                className={`p-2 rounded-full transition-all ${
+                  darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
               >
-                <User className="w-5 h-5 text-gray-600" />
+                <User className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
               </motion.button>
             </div>
           </div>
@@ -268,8 +291,12 @@ export const Home = ({ userProgress, setUserProgress }) => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Bible Journey</h2>
-          <p className="text-gray-600">Choose a book to continue your study</p>
+          <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            Your Bible Journey
+          </h2>
+          <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Choose a book to continue your study
+          </p>
         </motion.div>
 
         {/* Learning Path */}
@@ -294,11 +321,15 @@ export const Home = ({ userProgress, setUserProgress }) => {
                     disabled={isLocked}
                     className={`relative w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-sm transition-all ${
                       isLocked 
-                        ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
+                        ? darkMode 
+                          ? 'bg-gray-700 border-gray-600 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
                         : isCompleted
                         ? 'bg-green-500 border-green-600 text-white shadow-lg'
                         : isCurrent
                         ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-lg animate-pulse'
+                        : darkMode
+                        ? 'bg-gray-700 border-green-500 text-green-400 hover:border-green-400 hover:shadow-md'
                         : 'bg-white border-green-300 text-green-700 hover:border-green-500 hover:shadow-md'
                     }`}
                     whileHover={!isLocked ? { scale: 1.1 } : {}}
@@ -313,7 +344,9 @@ export const Home = ({ userProgress, setUserProgress }) => {
                     )}
                     
                     {/* Book name tooltip */}
-                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <div className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ${
+                      darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-800 text-white'
+                    }`}>
                       {book}
                     </div>
                   </motion.button>
@@ -330,13 +363,21 @@ export const Home = ({ userProgress, setUserProgress }) => {
           transition={{ delay: 0.5 }}
           className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-green-100">
+          <div className={`rounded-xl p-6 shadow-lg border-2 transition-all ${
+            darkMode 
+              ? 'bg-gray-800 border-green-700' 
+              : 'bg-white border-green-100'
+          }`}>
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                darkMode ? 'bg-green-900 bg-opacity-50' : 'bg-green-100'
+              }`}>
                 <BookOpen className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">Books Read</h3>
+                <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Books Read
+                </h3>
                 <p className="text-2xl font-bold text-green-600">
                   {Object.keys(userProgress.completedVerses).length}
                 </p>
@@ -344,13 +385,21 @@ export const Home = ({ userProgress, setUserProgress }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-blue-100">
+          <div className={`rounded-xl p-6 shadow-lg border-2 transition-all ${
+            darkMode 
+              ? 'bg-gray-800 border-blue-700' 
+              : 'bg-white border-blue-100'
+          }`}>
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                darkMode ? 'bg-blue-900 bg-opacity-50' : 'bg-blue-100'
+              }`}>
                 <Heart className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">Verses Studied</h3>
+                <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Verses Studied
+                </h3>
                 <p className="text-2xl font-bold text-blue-600">
                   {Object.values(userProgress.completedVerses).reduce((total, book) => 
                     total + Object.keys(book).length, 0
@@ -360,13 +409,21 @@ export const Home = ({ userProgress, setUserProgress }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-orange-100">
+          <div className={`rounded-xl p-6 shadow-lg border-2 transition-all ${
+            darkMode 
+              ? 'bg-gray-800 border-orange-700' 
+              : 'bg-white border-orange-100'
+          }`}>
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                darkMode ? 'bg-orange-900 bg-opacity-50' : 'bg-orange-100'
+              }`}>
                 <Flame className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">Current Streak</h3>
+                <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Current Streak
+                </h3>
                 <p className="text-2xl font-bold text-orange-600">{userProgress.streak} days</p>
               </div>
             </div>
