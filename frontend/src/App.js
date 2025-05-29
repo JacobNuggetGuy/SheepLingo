@@ -6,6 +6,7 @@ import {
   Home, 
   BookSelection, 
   VerseStudy, 
+  Quiz,
   Profile,
   LoadingScreen
 } from './components';
@@ -19,6 +20,7 @@ function App() {
       currentChapter: 1,
       currentVerse: 1,
       completedVerses: {},
+      completedQuizzes: {},
       streak: 0,
       totalXP: 0,
       achievements: []
@@ -88,6 +90,15 @@ function App() {
                 setUserNotes={setUserNotes}
                 userHighlights={userHighlights}
                 setUserHighlights={setUserHighlights}
+              />
+            } 
+          />
+          <Route 
+            path="/quiz/:bookName/:chapterGroup" 
+            element={
+              <Quiz 
+                userProgress={userProgress}
+                setUserProgress={setUserProgress}
               />
             } 
           />
