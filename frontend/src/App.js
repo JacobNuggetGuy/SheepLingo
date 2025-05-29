@@ -48,6 +48,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem('sheepLingo_darkMode', JSON.stringify(darkMode));
+    // Update document class for dark mode
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  useEffect(() => {
     localStorage.setItem('sheepLingo_progress', JSON.stringify(userProgress));
   }, [userProgress]);
 
@@ -60,11 +70,11 @@ function App() {
   }, [userHighlights]);
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen darkMode={darkMode} />;
   }
 
   return (
-    <div className="App">
+    <div className={`App ${darkMode ? 'dark' : ''}`}>
       <BrowserRouter>
         <Routes>
           <Route 
@@ -73,6 +83,8 @@ function App() {
               <Home 
                 userProgress={userProgress} 
                 setUserProgress={setUserProgress}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
               />
             } 
           />
@@ -82,6 +94,7 @@ function App() {
               <BookSelection 
                 userProgress={userProgress}
                 setUserProgress={setUserProgress}
+                darkMode={darkMode}
               />
             } 
           />
@@ -95,6 +108,7 @@ function App() {
                 setUserNotes={setUserNotes}
                 userHighlights={userHighlights}
                 setUserHighlights={setUserHighlights}
+                darkMode={darkMode}
               />
             } 
           />
@@ -104,6 +118,7 @@ function App() {
               <Quiz 
                 userProgress={userProgress}
                 setUserProgress={setUserProgress}
+                darkMode={darkMode}
               />
             } 
           />
@@ -112,6 +127,7 @@ function App() {
             element={
               <Profile 
                 userProgress={userProgress}
+                darkMode={darkMode}
               />
             } 
           />
