@@ -1,50 +1,104 @@
-import { useEffect } from "react";
-import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import './App.css';
+import { 
+  Home, 
+  BookSelection, 
+  VerseStudy, 
+  Profile,
+  LoadingScreen
+} from './components';
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [userProgress, setUserProgress] = useState(() => {
+    const saved = localStorage.getItem('sheepLingo_progress');
+    return saved ? JSON.parse(saved) : {
+      currentBook: 'Genesis',
+      currentChapter: 1,
+      currentVerse: 1,
+      completedVerses: {},
+      streak: 0,
+      totalXP: 0,
+      achievements: []
+    };
+  });
+
+  const [userNotes, setUserNotes] = useState(() => {
+    const saved = localStorage.getItem('sheepLingo_notes');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [userHighlights, setUserHighlights] = useState(() => {
+    const saved = localStorage.getItem('sheepLingo_highlights');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  useEffect(() => {
+    // Simulate loading
+    setTimeout(() => setIsLoading(false), 2000);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sheepLingo_progress', JSON.stringify(userProgress));
+  }, [userProgress]);
+
+  useEffect(() => {
+    localStorage.setItem('sheepLingo_notes', JSON.stringify(userNotes));
+  }, [userNotes]);
+
+  useEffect(() => {
+    localStorage.setItem('sheepLingo_highlights', JSON.stringify(userHighlights));
+  }, [userHighlights]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route 
+            path="/" 
+            element={
+              <Home 
+                userProgress={userProgress} 
+                setUserProgress={setUserProgress}
+              />
+            } 
+          />
+          <Route 
+            path="/book/:bookName" 
+            element={
+              <BookSelection 
+                userProgress={userProgress}
+                setUserProgress={setUserProgress}
+              />
+            } 
+          />
+          <Route 
+            path="/study/:bookName/:chapter/:verse" 
+            element={
+              <VerseStudy 
+                userProgress={userProgress}
+                setUserProgress={setUserProgress}
+                userNotes={userNotes}
+                setUserNotes={setUserNotes}
+                userHighlights={userHighlights}
+                setUserHighlights={setUserHighlights}
+              />
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <Profile 
+                userProgress={userProgress}
+              />
+            } 
+          />
         </Routes>
       </BrowserRouter>
     </div>
