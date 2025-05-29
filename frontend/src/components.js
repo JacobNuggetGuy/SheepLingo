@@ -331,7 +331,7 @@ export const Home = ({ userProgress, setUserProgress }) => {
   );
 };
 
-// Book Selection Component
+// Book Selection Component - Duolingo Vertical Path Style
 export const BookSelection = ({ userProgress, setUserProgress }) => {
   const { bookName } = useParams();
   const navigate = useNavigate();
@@ -356,6 +356,42 @@ export const BookSelection = ({ userProgress, setUserProgress }) => {
            userProgress.currentChapter === chapter;
   };
 
+  const isQuizChapter = (chapter) => {
+    return chapter % 5 === 0;
+  };
+
+  // Create the vertical path with chapters and quizzes
+  const createLearningPath = () => {
+    const pathItems = [];
+    
+    for (let i = 1; i <= chapters.length; i++) {
+      // Add chapter
+      pathItems.push({
+        type: 'chapter',
+        number: i,
+        isCompleted: isChapterCompleted(i),
+        isCurrent: isChapterCurrent(i),
+        isLocked: i > userProgress.currentChapter && bookName === userProgress.currentBook
+      });
+
+      // Add quiz every 5 chapters
+      if (i % 5 === 0 && i < chapters.length) {
+        pathItems.push({
+          type: 'quiz',
+          number: `Quiz ${i/5}`,
+          chapterGroup: i,
+          isCompleted: isChapterCompleted(i), // Quiz completed if chapter is completed
+          isCurrent: false,
+          isLocked: i > userProgress.currentChapter && bookName === userProgress.currentBook
+        });
+      }
+    }
+    
+    return pathItems;
+  };
+
+  const pathItems = createLearningPath();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-green-50">
       {/* Header */}
@@ -379,8 +415,8 @@ export const BookSelection = ({ userProgress, setUserProgress }) => {
         </div>
       </div>
 
-      {/* Chapters Grid */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Vertical Learning Path */}
+      <div className="max-w-2xl mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -390,41 +426,111 @@ export const BookSelection = ({ userProgress, setUserProgress }) => {
           <p className="text-gray-600">Continue your journey through {bookName}</p>
         </motion.div>
 
-        <div className="grid grid-cols-6 md:grid-cols-10 gap-4">
-          {chapters.map((chapter, index) => {
-            const isCompleted = isChapterCompleted(chapter);
-            const isCurrent = isChapterCurrent(chapter);
-            const isLocked = chapter > userProgress.currentChapter && bookName === userProgress.currentBook;
+        {/* Vertical Path */}
+        <div className="relative">
+          {/* Connecting line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-300 transform -translate-x-1/2 z-0"></div>
+          
+          <div className="space-y-6 relative z-10">
+            {pathItems.map((item, index) => {
+              const handleClick = () => {
+                if (item.isLocked) return;
+                
+                if (item.type === 'chapter') {
+                  navigate(`/study/${bookName}/${item.number}/1`);
+                } else if (item.type === 'quiz') {
+                  navigate(`/quiz/${bookName}/${item.chapterGroup}`);
+                }
+              };
 
-            return (
-              <motion.button
-                key={chapter}
-                onClick={() => !isLocked && navigate(`/study/${bookName}/${chapter}/1`)}
-                disabled={isLocked}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className={`aspect-square rounded-xl border-3 flex items-center justify-center font-bold text-lg transition-all ${
-                  isLocked
-                    ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
-                    : isCompleted
-                    ? 'bg-green-500 border-green-600 text-white shadow-lg'
-                    : isCurrent
-                    ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-lg'
-                    : 'bg-white border-green-300 text-green-700 hover:border-green-500 hover:shadow-md'
-                }`}
-                whileHover={!isLocked ? { scale: 1.05 } : {}}
-                whileTap={!isLocked ? { scale: 0.95 } : {}}
-              >
-                {isCompleted ? (
-                  <Trophy className="w-6 h-6" />
-                ) : (
-                  chapter
-                )}
-              </motion.button>
-            );
-          })}
+              return (
+                <motion.div
+                  key={`${item.type}-${item.number}`}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
+                >
+                  <motion.button
+                    onClick={handleClick}
+                    disabled={item.isLocked}
+                    className={`relative w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-sm transition-all ${
+                      item.isLocked
+                        ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
+                        : item.isCompleted
+                        ? 'bg-green-500 border-green-600 text-white shadow-lg'
+                        : item.isCurrent
+                        ? 'bg-yellow-400 border-yellow-500 text-yellow-900 shadow-lg animate-pulse'
+                        : item.type === 'quiz'
+                        ? 'bg-purple-500 border-purple-600 text-white hover:border-purple-700 hover:shadow-md'
+                        : 'bg-white border-green-300 text-green-700 hover:border-green-500 hover:shadow-md'
+                    } ${item.type === 'quiz' ? 'rounded-lg' : ''}`}
+                    whileHover={!item.isLocked ? { scale: 1.1 } : {}}
+                    whileTap={!item.isLocked ? { scale: 0.95 } : {}}
+                  >
+                    {item.isCompleted ? (
+                      <Trophy className="w-6 h-6" />
+                    ) : item.isLocked ? (
+                      <span className="text-xs">🔒</span>
+                    ) : item.type === 'quiz' ? (
+                      <span className="text-xs font-bold">Q</span>
+                    ) : (
+                      item.number
+                    )}
+                  </motion.button>
+
+                  {/* Label */}
+                  <div className={`absolute ${index % 2 === 0 ? 'left-20' : 'right-20'} 
+                                   bg-white px-3 py-1 rounded-lg shadow-md border-2 ${
+                                   item.type === 'quiz' ? 'border-purple-200' : 'border-green-200'
+                                 }`}>
+                    <span className={`text-sm font-semibold ${
+                      item.type === 'quiz' ? 'text-purple-700' : 'text-green-700'
+                    }`}>
+                      {item.type === 'quiz' ? item.number : `Chapter ${item.number}`}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Legend */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 bg-white rounded-xl p-6 shadow-lg border-2 border-gray-100"
+        >
+          <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Legend</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white border-4 border-green-300 rounded-full flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-green-700" />
+              </div>
+              <span className="text-sm text-gray-700">Chapter</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-500 border-4 border-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xs font-bold">Q</span>
+              </div>
+              <span className="text-sm text-gray-700">Quiz</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-500 border-4 border-green-600 rounded-full flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm text-gray-700">Completed</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-yellow-400 border-4 border-yellow-500 rounded-full flex items-center justify-center">
+                <span className="text-yellow-900 text-xs font-bold">1</span>
+              </div>
+              <span className="text-sm text-gray-700">Current</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
