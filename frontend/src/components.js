@@ -646,7 +646,8 @@ export const VerseStudy = ({
   userNotes, 
   setUserNotes, 
   userHighlights, 
-  setUserHighlights 
+  setUserHighlights,
+  darkMode 
 }) => {
   const { bookName, chapter, verse } = useParams();
   const navigate = useNavigate();
@@ -654,8 +655,8 @@ export const VerseStudy = ({
   const [currentVerse, setCurrentVerse] = useState(parseInt(verse));
   const [showNotes, setShowNotes] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showHighlightPicker, setShowHighlightPicker] = useState(false);
   const [noteText, setNoteText] = useState('');
-  const [highlightColor, setHighlightColor] = useState('yellow');
   const [chatMessages, setChatMessages] = useState([]);
 
   const chapterNum = parseInt(chapter);
@@ -703,12 +704,32 @@ export const VerseStudy = ({
     setShowNotes(false);
   };
 
-  // Highlight text
-  const highlightVerse = () => {
-    setUserHighlights(prev => ({
-      ...prev,
-      [verseKey]: highlightColor
-    }));
+  // Enhanced highlight function
+  const highlightVerse = (color) => {
+    if (userHighlights[verseKey] === color) {
+      // Remove highlight if same color is selected
+      setUserHighlights(prev => {
+        const newHighlights = { ...prev };
+        delete newHighlights[verseKey];
+        return newHighlights;
+      });
+    } else {
+      // Apply new highlight
+      setUserHighlights(prev => ({
+        ...prev,
+        [verseKey]: color
+      }));
+    }
+    setShowHighlightPicker(false);
+  };
+
+  // Remove highlight
+  const removeHighlight = () => {
+    setUserHighlights(prev => {
+      const newHighlights = { ...prev };
+      delete newHighlights[verseKey];
+      return newHighlights;
+    });
   };
 
   // Chat with verse
@@ -749,11 +770,20 @@ export const VerseStudy = ({
   const isCompleted = userProgress.completedVerses[bookName]?.[chapterNum]?.[currentVerse];
   const hasNote = userNotes[verseKey];
   const hasHighlight = userHighlights[verseKey];
+  const currentHighlight = hasHighlight ? HIGHLIGHT_COLORS.find(h => h.name === hasHighlight) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+    <div className={`min-h-screen transition-all duration-300 ${
+      darkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900' 
+        : 'bg-gradient-to-br from-purple-50 via-blue-50 to-green-50'
+    }`}>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b-2 border-green-200">
+      <div className={`shadow-sm border-b-2 transition-all duration-300 ${
+        darkMode 
+          ? 'bg-gray-800 border-green-700' 
+          : 'bg-white border-green-200'
+      }`}>
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -761,23 +791,27 @@ export const VerseStudy = ({
                 onClick={() => navigate(`/book/${bookName}`)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                className={`p-2 rounded-full transition-all ${
+                  darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
               >
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
+                <ChevronLeft className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
               </motion.button>
               <SheepMascot size="md" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-bold text-gray-800">{bookName} {chapter}:{currentVerse}</h1>
-              <div className="w-48 bg-gray-200 rounded-full h-2 mt-2">
+              <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {bookName} {chapter}:{currentVerse}
+              </h1>
+              <div className={`w-48 rounded-full h-2 mt-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
                 <div 
                   className="bg-green-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(currentVerse / 10) * 100}%` }}
                 />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="text-sm text-gray-600">+{isCompleted ? 10 : 0} XP</div>
+            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              +{isCompleted ? 10 : 0} XP
             </div>
           </div>
         </div>
@@ -791,17 +825,29 @@ export const VerseStudy = ({
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
-          className={`bg-white rounded-2xl shadow-xl border-4 p-8 mb-6 ${
-            hasHighlight ? `border-${hasHighlight}-400` : 'border-green-200'
-          } ${hasHighlight ? `bg-${hasHighlight}-50` : ''}`}
+          className={`rounded-2xl shadow-xl border-4 p-8 mb-6 transition-all duration-300 ${
+            hasHighlight && currentHighlight
+              ? `${currentHighlight.bg} ${currentHighlight.border} ${darkMode ? currentHighlight.darkBg : ''}`
+              : darkMode
+              ? 'bg-gray-800 border-green-600'
+              : 'bg-white border-green-200'
+          }`}
         >
           <div className="text-center mb-6">
-            <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            <span className={`text-sm font-semibold px-3 py-1 rounded-full transition-all ${
+              darkMode ? 'text-gray-300 bg-gray-700' : 'text-gray-500 bg-gray-100'
+            }`}>
               {bookName} {chapter}:{currentVerse}
             </span>
           </div>
           
-          <blockquote className="text-2xl leading-relaxed text-gray-800 font-medium text-center italic">
+          <blockquote className={`text-2xl leading-relaxed font-medium text-center italic transition-all ${
+            hasHighlight && currentHighlight
+              ? currentHighlight.text
+              : darkMode
+              ? 'text-gray-200'
+              : 'text-gray-800'
+          }`}>
             "{getVerseText()}"
           </blockquote>
 
@@ -809,11 +855,45 @@ export const VerseStudy = ({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded"
+              className={`mt-6 p-4 rounded border-l-4 transition-all ${
+                darkMode 
+                  ? 'bg-blue-900 bg-opacity-30 border-blue-400' 
+                  : 'bg-blue-50 border-blue-400'
+              }`}
             >
               <div className="flex items-start space-x-2">
                 <StickyNote className="w-5 h-5 text-blue-500 mt-0.5" />
-                <p className="text-blue-700 italic">{userNotes[verseKey]}</p>
+                <p className={`italic ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                  {userNotes[verseKey]}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Current highlight indicator */}
+          {hasHighlight && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 flex items-center justify-center space-x-2"
+            >
+              <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Highlighted with:
+              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg">{currentHighlight?.emoji}</span>
+                <span className={`text-sm font-medium ${currentHighlight?.text}`}>
+                  {currentHighlight?.name}
+                </span>
+                <motion.button
+                  onClick={removeHighlight}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900"
+                  title="Remove highlight"
+                >
+                  <X className="w-4 h-4 text-red-500" />
+                </motion.button>
               </div>
             </motion.div>
           )}
@@ -821,21 +901,63 @@ export const VerseStudy = ({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <motion.button
-            onClick={highlightVerse}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center space-x-2 bg-yellow-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-yellow-600"
-          >
-            <Highlighter className="w-5 h-5" />
-            <span>Highlight</span>
-          </motion.button>
+          <div className="relative">
+            <motion.button
+              onClick={() => setShowHighlightPicker(!showHighlightPicker)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center justify-center space-x-2 bg-yellow-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-yellow-600 transition-all"
+            >
+              <Highlighter className="w-5 h-5" />
+              <span>Highlight</span>
+            </motion.button>
+
+            {/* Highlight Color Picker */}
+            <AnimatePresence>
+              {showHighlightPicker && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                  className={`absolute top-full mt-2 left-0 right-0 p-3 rounded-xl shadow-xl border-2 z-10 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-800 border-gray-600' 
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {HIGHLIGHT_COLORS.map((color) => (
+                      <motion.button
+                        key={color.name}
+                        onClick={() => highlightVerse(color.name)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`aspect-square rounded-lg border-2 flex items-center justify-center transition-all ${
+                          color.bg
+                        } ${color.border} ${
+                          hasHighlight === color.name ? 'ring-2 ring-blue-500' : ''
+                        }`}
+                        title={color.name}
+                      >
+                        <span className="text-lg">{color.emoji}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                  <div className={`text-xs text-center mt-2 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
+                    Click same color to remove
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <motion.button
             onClick={() => setShowNotes(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center space-x-2 bg-blue-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-blue-600"
+            className="flex items-center justify-center space-x-2 bg-blue-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-blue-600 transition-all"
           >
             <StickyNote className="w-5 h-5" />
             <span>Note</span>
@@ -845,7 +967,7 @@ export const VerseStudy = ({
             onClick={() => setShowChat(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center space-x-2 bg-purple-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-purple-600"
+            className="flex items-center justify-center space-x-2 bg-purple-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:bg-purple-600 transition-all"
           >
             <MessageCircle className="w-5 h-5" />
             <span>Chat</span>
@@ -856,7 +978,7 @@ export const VerseStudy = ({
             disabled={isCompleted}
             whileHover={!isCompleted ? { scale: 1.05 } : {}}
             whileTap={!isCompleted ? { scale: 0.95 } : {}}
-            className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-semibold shadow-lg ${
+            className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-semibold shadow-lg transition-all ${
               isCompleted 
                 ? 'bg-green-500 text-white cursor-not-allowed' 
                 : 'bg-green-500 text-white hover:bg-green-600'
@@ -874,9 +996,13 @@ export const VerseStudy = ({
             disabled={currentVerse <= 1}
             whileHover={currentVerse > 1 ? { scale: 1.05 } : {}}
             whileTap={currentVerse > 1 ? { scale: 0.95 } : {}}
-            className={`flex items-center space-x-2 py-3 px-6 rounded-xl font-semibold ${
+            className={`flex items-center space-x-2 py-3 px-6 rounded-xl font-semibold transition-all ${
               currentVerse <= 1
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? darkMode
+                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : darkMode
+                ? 'bg-gray-700 text-white hover:bg-gray-600'
                 : 'bg-gray-600 text-white hover:bg-gray-700'
             }`}
           >
@@ -893,7 +1019,7 @@ export const VerseStudy = ({
             onClick={goToNextVerse}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-2 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700"
+            className="flex items-center space-x-2 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 transition-all"
           >
             <span>Next</span>
             <ChevronRight className="w-5 h-5" />
@@ -916,25 +1042,37 @@ export const VerseStudy = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-96 max-w-90vw"
+              className={`rounded-2xl p-6 w-96 max-w-90vw transition-all ${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              }`}
             >
-              <h3 className="text-xl font-bold mb-4">Add Note</h3>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Add Note
+              </h3>
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 placeholder="Write your thoughts about this verse..."
-                className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full h-32 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                  darkMode 
+                    ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
+                    : 'border-gray-300 bg-white text-gray-800'
+                }`}
               />
               <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => setShowNotes(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    darkMode 
+                      ? 'text-gray-300 hover:bg-gray-700' 
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveNote}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
                 >
                   Save Note
                 </button>
@@ -959,22 +1097,32 @@ export const VerseStudy = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-96 max-w-90vw h-96"
+              className={`rounded-2xl p-6 w-96 max-w-90vw h-96 transition-all ${
+                darkMode ? 'bg-gray-800' : 'bg-white'
+              }`}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold">Chat about this verse</h3>
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Chat about this verse
+                </h3>
                 <SheepMascot size="sm" />
               </div>
               
-              <div className="h-48 overflow-y-auto bg-gray-50 rounded-lg p-3 mb-4">
+              <div className={`h-48 overflow-y-auto rounded-lg p-3 mb-4 transition-all ${
+                darkMode ? 'bg-gray-900' : 'bg-gray-50'
+              }`}>
                 {chatMessages.length === 0 ? (
-                  <p className="text-gray-500 text-center">Ask me anything about this verse!</p>
+                  <p className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Ask me anything about this verse!
+                  </p>
                 ) : (
                   chatMessages.map((msg, index) => (
                     <div key={index} className={`mb-3 ${msg.type === 'user' ? 'text-right' : ''}`}>
-                      <div className={`inline-block p-2 rounded-lg max-w-xs ${
+                      <div className={`inline-block p-2 rounded-lg max-w-xs transition-all ${
                         msg.type === 'user' 
                           ? 'bg-blue-500 text-white' 
+                          : darkMode
+                          ? 'bg-green-800 text-green-100'
                           : 'bg-green-100 text-green-800'
                       }`}>
                         {msg.text}
@@ -988,7 +1136,11 @@ export const VerseStudy = ({
                 <input
                   type="text"
                   placeholder="Ask about this verse..."
-                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                    darkMode 
+                      ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
+                      : 'border-gray-300 bg-white text-gray-800'
+                  }`}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && e.target.value.trim()) {
                       sendChatMessage(e.target.value);
@@ -1004,7 +1156,7 @@ export const VerseStudy = ({
                       input.value = '';
                     }
                   }}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all"
                 >
                   Send
                 </button>
